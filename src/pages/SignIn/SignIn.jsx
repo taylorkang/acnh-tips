@@ -4,37 +4,28 @@ import Button from 'react-bootstrap/Button';
 import Row from 'react-bootstrap/Row';
 import Col from 'react-bootstrap/Col';
 import './SignIn.css';
-import { firebaseAuth } from '../../provider/AuthProvider';
+import 'firebase/auth';
+import { useHistory } from 'react-router-dom';
+import { useFirebaseApp } from 'reactfire';
 
-const SignInForm = () => {
+const SignInForm = (props) => {
   const { handleSignin, inputs, setInputs, errors } = useContext(firebaseAuth);
   const [formError, setFormError] = useState('');
   const isEmpty = (str) => {
     return !str || 0 === str.length;
   };
-
-  const handleSubmit = (e) => {
-    setFormError('');
-    e.preventDefault();
-    console.log('handleSubmit');
-    handleSignin();
-  };
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-    console.log(inputs);
-    setInputs((prev) => ({ ...prev, [name]: value }));
-  };
+  const user = props.user;
 
   return (
-    <Form onSubmit={handleSubmit} className='box text-center'>
+    <Form onSubmit={props.handleSubmit} className='box text-center'>
       <h1>Sign In</h1>
       <Form.Group controlId='formBasicEmail'>
         <Form.Control
           name='email'
-          value={inputs.email}
+          value={user.email}
           type='email'
           placeholder='Enter email'
-          onChange={handleChange}
+          onChange={props.handleChange}
           required
         />
         {/* <Form.Text className='text-muted'>
@@ -45,10 +36,10 @@ const SignInForm = () => {
       <Form.Group controlId='formBasicPassword'>
         <Form.Control
           name='password'
-          value={inputs.password}
+          value={user.password}
           type='password'
           placeholder='Password'
-          onChange={handleChange}
+          onChange={props.handleChange}
           required
         />
       </Form.Group>
@@ -65,9 +56,59 @@ const SignInForm = () => {
 };
 
 const SignIn = () => {
+  document.title = 'Sign In | ACNH Tips';
+  let history = useHistory();
+  const [user, setUser] = useState({
+    email: '',
+    password: '',
+    error: '',
+    code: '',
+    isError: false,
+  });
+
+  const handleChange = (e) => {
+    setUser({
+      ...user,
+      [e.target.name]: e.target.value,
+      error: '',
+    });
+  };
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    // Log in code here.
+
+    firebase
+      .auth()
+      .signInWithEmailAndPassword(user.email, user.password)
+      .then((result) => {
+        setTimeout(function () {
+          history.push('/tips');
+        }, 1000);
+
+        //}
+      })
+      .catch((error) => {
+        // Update the error
+
+        setUser({
+          ...user,
+          error: error.message,
+          code: error.code,
+          isError: true,
+        });
+      });
+  };
+
+  const firebase = useFirebaseApp();
+
   return (
     <div className='flex'>
-      <SignInForm />
+      <SignInForm
+        handleSubmit={handleSubmit}
+        handleChange={handleChange}
+        firebase={firebase}
+      />
     </div>
   );
 };
