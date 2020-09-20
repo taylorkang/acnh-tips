@@ -3,46 +3,36 @@ import Form from 'react-bootstrap/Form';
 import Button from 'react-bootstrap/Button';
 import Row from 'react-bootstrap/Row';
 import Col from 'react-bootstrap/Col';
+import { useFirebaseApp } from 'reactfire';
+import 'firebase/auth';
+import { useHistory } from 'react-router-dom';
 import './Home.css';
-import { firebaseAuth } from '../../provider/AuthProvider';
 
-const SignUpForm = () => {
-  const { handleSignup, inputs, setInputs, errors } = useContext(firebaseAuth);
+const SignUpForm = (props) => {
   const [formError, setFormError] = useState('');
   const isEmpty = (str) => {
     return !str || 0 === str.length;
   };
 
-  const handleSubmit = (e) => {
-    setFormError('');
-    e.preventDefault();
-    console.log('handleSubmit');
-    if (
-      !isEmpty(inputs.firstName) &&
-      !isEmpty(inputs.lastName) &&
-      !isEmpty(inputs.displayName) &&
-      !isEmpty(inputs.email) &&
-      !isEmpty(inputs.password)
-    ) {
-      handleSignup();
-    } else {
-      setFormError('Please fill out the entire form.');
-      console.log('Please fill out the entire form.');
-    }
-  };
   const handleChange = (e) => {
-    const { name, value } = e.target;
-    console.log(inputs);
-    setInputs((prev) => ({ ...prev, [name]: value }));
+    console.log(e.target.value);
+    props.setUser({
+      ...user,
+      [e.target.name]: e.target.value,
+      error: '',
+    });
   };
 
+  let user = props.user;
+
   return (
-    <Form onSubmit={handleSubmit} className='box'>
+    <Form onSubmit={props.handleSubmit} className='box text-center'>
+      <h1>Sign Up</h1>
       <Form.Group controlId='formBasicName'>
         <Row>
           <Col>
             <Form.Control
-              value={inputs.firstName}
+              value={user.firstName}
               name='firstName'
               placeholder='First name'
               onChange={handleChange}
@@ -51,7 +41,7 @@ const SignUpForm = () => {
           </Col>
           <Col>
             <Form.Control
-              value={inputs.lastName}
+              value={user.lastName}
               name='lastName'
               placeholder='Last name'
               onChange={handleChange}
@@ -63,7 +53,7 @@ const SignUpForm = () => {
 
       <Form.Group controlId='formBasicDisplayName'>
         <Form.Control
-          value={inputs.displayName}
+          value={user.displayName}
           name='displayName'
           placeholder='Display Name'
           onChange={handleChange}
@@ -77,7 +67,7 @@ const SignUpForm = () => {
       <Form.Group controlId='formBasicEmail'>
         <Form.Control
           name='email'
-          value={inputs.email}
+          value={user.email}
           type='email'
           placeholder='Enter email'
           onChange={handleChange}
@@ -91,7 +81,7 @@ const SignUpForm = () => {
       <Form.Group controlId='formBasicPassword'>
         <Form.Control
           name='password'
-          value={inputs.password}
+          value={user.password}
           type='password'
           placeholder='Password'
           onChange={handleChange}
@@ -102,18 +92,63 @@ const SignUpForm = () => {
       <Button variant='primary' type='submit'>
         Submit
       </Button>
-      {errors.length > 0
+      {/* {errors.length > 0
         ? errors.map((error) => <p style={{ color: 'red' }}>{error}</p>)
-        : null}
-      {!isEmpty(formError) ? <p style={{ color: 'red' }}>{formError}</p> : null}
+        : null} */}
+      {!isEmpty(user.error) ? (
+        <p style={{ color: 'red' }}>{user.error}</p>
+      ) : null}
     </Form>
   );
 };
 
 const Home = () => {
+  const firebase = useFirebaseApp();
+  let history = useHistory();
+  document.title = 'Sign Up | ACNH Tips';
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    try {
+      await firebase
+        .auth()
+        .createUserWithEmailAndPassword(user.email, user.password)
+        .then((res) => {
+          res.user.updateProfile({
+            displayName: user.displayName,
+          });
+
+          setTimeout(function () {
+            history.push('/tips');
+          }, 1000);
+        })
+        .catch((e) => {
+          setUser({
+            ...user,
+            error: e.message,
+            isError: true,
+          });
+        });
+    } catch (e) {
+      setUser({
+        ...user,
+        error: 'Please agree to the terms and conditions and privacy policy',
+        isError: true,
+      });
+    }
+  };
+
+  const [user, setUser] = useState({
+    firstName: '',
+    lastName: '',
+    displayName: '',
+    email: '',
+    password: '',
+    error: '',
+  });
   return (
     <div className='flex'>
-      <SignUpForm />
+      <SignUpForm user={user} setUser={setUser} handleSubmit={handleSubmit} />
     </div>
   );
 };

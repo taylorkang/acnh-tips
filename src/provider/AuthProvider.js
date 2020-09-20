@@ -10,11 +10,21 @@ const AuthProvider = (props) => {
     displayName: '',
   });
   const [errors, setErrors] = useState([]);
-  const [token, setToken] = useState(null);
 
   const handleSignup = () => {
     // middle man between firebase and signup
     authMethods.signup(inputs.email, inputs.password, setErrors);
+    console.log(errors);
+  };
+
+  const handleSignin = () => {
+    // middle man between firebase and signup
+    authMethods.signin(inputs.email, inputs.password, setErrors);
+    console.log(errors);
+  };
+
+  const handleSignout = () => {
+    authMethods.signout();
   };
 
   return (
@@ -23,6 +33,8 @@ const AuthProvider = (props) => {
         //replaced test with handleSignup
         //replaced test with handleSignup
         handleSignup,
+        handleSignin,
+        handleSignout,
         inputs,
         setInputs,
         errors,

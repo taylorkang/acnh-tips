@@ -13,6 +13,9 @@ import logo from './logo.svg';
 import './App.css';
 
 import Home from './pages/Home/Home';
+import SignIn from './pages/SignIn/SignIn';
+import Tips from './pages/Tips/Tips';
+import ProtectedRoute from './ProtectedRoute';
 
 const MainNav = () => {
   return (
@@ -37,6 +40,10 @@ function App() {
         <Route exact path='/'>
           <Home />
         </Route>
+        <Route exact path='/signin'>
+          <SignIn />
+        </Route>
+        <ProtectedRoute component={Tips} exact path='/tips' />
       </Switch>
     </Router>
   );

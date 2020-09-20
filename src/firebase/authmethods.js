@@ -1,4 +1,3 @@
-import firebaseconfig from './firebaseIndex';
 import firebase from 'firebase';
 
 export const authMethods = {
@@ -15,6 +14,25 @@ export const authMethods = {
         setErrors((prev) => [...prev, err.message]);
       });
   },
-  signin: (email, password) => {},
-  signout: (email, password) => {},
+  signin: (email, password, setErrors) => {
+    console.log('handleSignin!');
+    firebase
+      .auth()
+      .signInWithEmailAndPassword(email, password)
+      .then((res) => {
+        console.log(res);
+      })
+      .catch((err) => {
+        setErrors((prev) => [...prev, err.message]);
+      });
+  },
+  signout: (setErrors) => {
+    firebase
+      .auth()
+      .signOut()
+      .then((res) => {})
+      .catch((err) => {
+        setErrors((prev) => [...prev, err.message]);
+      });
+  },
 };
