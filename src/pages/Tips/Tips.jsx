@@ -1,12 +1,15 @@
-import React, { useContext, useState } from 'react';
+import React, { useContext, useState, useEffect } from 'react';
 import Form from 'react-bootstrap/Form';
 import Button from 'react-bootstrap/Button';
 import Row from 'react-bootstrap/Row';
 import Col from 'react-bootstrap/Col';
-import { useFirebaseApp } from 'reactfire';
+import { useFirebaseApp, useFirestore } from 'reactfire';
 import { useHistory } from 'react-router-dom';
+import 'firebase/database';
 import 'firebase/auth';
 import './Tips.css';
+
+//const db = useDatabase();
 
 const TipsChat = () => {
   const isEmpty = (str) => {
@@ -20,8 +23,29 @@ const TipsChat = () => {
   );
 };
 
-const Tips = () => {
+function Tips() {
   const firebase = useFirebaseApp();
+  const db = useFirestore();
+  const [messageList, setMessageList] = useState([]);
+
+  useEffect(() => {
+    getMessages(db);
+  }, []);
+
+  const getMessages = async () => {
+    const messagesSnapshot = await db.collection('messages').get();
+    let messages = [];
+    messagesSnapshot.forEach((doc) => {
+      messages.push({
+        id: doc.id,
+        data: doc.data(),
+      });
+      setMessageList(messages);
+    });
+    console.log(messages);
+    console.log('getting messages...');
+  };
+
   let history = useHistory();
 
   const logOut = (e) => {
@@ -36,6 +60,6 @@ const Tips = () => {
       <TipsChat />
     </div>
   );
-};
+}
 
 export default Tips;
