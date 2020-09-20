@@ -32,7 +32,6 @@ const SignUpForm = (props) => {
         <Row>
           <Col>
             <Form.Control
-              value={user.firstName}
               name='firstName'
               placeholder='First name'
               onChange={handleChange}
@@ -41,7 +40,6 @@ const SignUpForm = (props) => {
           </Col>
           <Col>
             <Form.Control
-              value={user.lastName}
               name='lastName'
               placeholder='Last name'
               onChange={handleChange}
@@ -53,7 +51,6 @@ const SignUpForm = (props) => {
 
       <Form.Group controlId='formBasicDisplayName'>
         <Form.Control
-          value={user.displayName}
           name='displayName'
           placeholder='Display Name'
           onChange={handleChange}
@@ -67,7 +64,6 @@ const SignUpForm = (props) => {
       <Form.Group controlId='formBasicEmail'>
         <Form.Control
           name='email'
-          value={user.email}
           type='email'
           placeholder='Enter email'
           onChange={handleChange}
@@ -81,7 +77,6 @@ const SignUpForm = (props) => {
       <Form.Group controlId='formBasicPassword'>
         <Form.Control
           name='password'
-          value={user.password}
           type='password'
           placeholder='Password'
           onChange={handleChange}
@@ -95,8 +90,8 @@ const SignUpForm = (props) => {
       {/* {errors.length > 0
         ? errors.map((error) => <p style={{ color: 'red' }}>{error}</p>)
         : null} */}
-      {!isEmpty(user.error) ? (
-        <p style={{ color: 'red' }}>{user.error}</p>
+      {props.user && !isEmpty(props.user.error) ? (
+        <p style={{ color: 'red' }}>{props.user.error}</p>
       ) : null}
     </Form>
   );

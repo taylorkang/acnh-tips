@@ -9,20 +9,16 @@ import { useHistory } from 'react-router-dom';
 import { useFirebaseApp } from 'reactfire';
 
 const SignInForm = (props) => {
-  const { handleSignin, inputs, setInputs, errors } = useContext(firebaseAuth);
-  const [formError, setFormError] = useState('');
   const isEmpty = (str) => {
     return !str || 0 === str.length;
   };
-  const user = props.user;
 
   return (
-    <Form onSubmit={props.handleSubmit} className='box text-center'>
+    <Form onSubmit={props.handleSubmit} className='box text-center signin'>
       <h1>Sign In</h1>
       <Form.Group controlId='formBasicEmail'>
         <Form.Control
           name='email'
-          value={user.email}
           type='email'
           placeholder='Enter email'
           onChange={props.handleChange}
@@ -36,7 +32,6 @@ const SignInForm = (props) => {
       <Form.Group controlId='formBasicPassword'>
         <Form.Control
           name='password'
-          value={user.password}
           type='password'
           placeholder='Password'
           onChange={props.handleChange}
@@ -47,10 +42,10 @@ const SignInForm = (props) => {
       <Button variant='primary' type='submit'>
         Submit
       </Button>
-      {errors.length > 0
-        ? errors.map((error) => <p style={{ color: 'red' }}>{error}</p>)
-        : null}
-      {!isEmpty(formError) ? <p style={{ color: 'red' }}>{formError}</p> : null}
+
+      {props.user && !isEmpty(props.user.error) ? (
+        <p style={{ color: 'red' }}>{props.user.error}</p>
+      ) : null}
     </Form>
   );
 };

@@ -23,7 +23,6 @@ const ProtectedRoute = (props) => {
 
 ProtectedRoute.propTypes = {
   component: PropTypes.any.isRequired,
-  layout: PropTypes.any.isRequired,
   path: PropTypes.string,
 };
 
