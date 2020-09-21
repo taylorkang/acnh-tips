@@ -109,6 +109,12 @@ function Tips() {
     });
   };
 
+  const onKeyUp = (e) => {
+    if (e.charCode === 13) {
+      sendMessage();
+    }
+  };
+
   const onSubmit = () => {
     sendMessage();
   };
@@ -134,6 +140,7 @@ function Tips() {
                 name='message'
                 value={message.message}
                 key='message_key'
+                onKeyPress={onKeyUp}
               />
               <InputGroup.Append>
                 <Button onClick={onSubmit} variant='outline-secondary'>
