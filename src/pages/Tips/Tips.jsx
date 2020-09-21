@@ -1,4 +1,4 @@
-import React, { useContext, useState, useEffect } from 'react';
+import React, { useContext, useState, useEffect, useRef } from 'react';
 import Form from 'react-bootstrap/Form';
 import Button from 'react-bootstrap/Button';
 import Row from 'react-bootstrap/Row';
@@ -13,6 +13,7 @@ import 'firebase/auth';
 import './Tips.css';
 
 import API from '../../api.js';
+const scrollToRef = (ref) => window.scrollTo(0, ref.current.offsetTop);
 
 //const db = useDatabase();
 
@@ -21,7 +22,10 @@ function Tips() {
   const db = useFirestore();
   const [messageList, setMessageList] = useState([]);
   const [message, setMessage] = useState({});
+  const [avatar, setAvatar] = useState('');
   const user = useUser();
+
+  const myRef = useRef(null);
 
   useEffect(() => {
     getMessages(db);
@@ -31,6 +35,11 @@ function Tips() {
       displayName: user.displayName,
     });
 
+    const getAvatar = async () => {
+      let res = await API.get(`avatar/${user.uid}`);
+      setAvatar(res.data);
+    };
+    getAvatar();
     db.collection('messages')
       .where('type', '==', 'msg')
       .onSnapshot((querySnapshot) => {
@@ -39,12 +48,20 @@ function Tips() {
             console.log('adding');
             let items = messageList;
             items.push({ id: change.doc.id, data: change.doc.data() });
-            setMessageList(items);
+            let msgs = sortByTimeAscending(items);
+            setMessageList(msgs);
             console.log('New msg: ', change.doc.data());
+            scrollToBottom();
           }
         });
       });
+    scrollToBottom();
   }, []);
+
+  const scrollToBottom = () => {
+    console.log('scrolling...');
+    scrollToRef(myRef);
+  };
 
   const getMessages = async () => {
     const messagesSnapshot = await db.collection('messages').get();
@@ -55,9 +72,10 @@ function Tips() {
         data: doc.data(),
       });
     });
-    setMessageList(messages);
-    console.log(messages);
-    console.log('getting messages...');
+    console.log('setting messages...');
+    let msgs = sortByTimeAscending(messages);
+    setMessageList(msgs);
+    console.log(msgs);
   };
 
   let history = useHistory();
@@ -73,10 +91,19 @@ function Tips() {
   };
 
   const sortByTimeAscending = (msgs) => {
-    let sorted = msgs.sort(function (x, y) {
-      return x.timestamp - y.timestamp;
+    let m = msgs;
+    m.sort(function (a, b) {
+      console.log(a.data.timestamp);
+      console.log(b.data.timestamp);
+      let dateA = new Date(a.data.timestamp),
+        dateB = new Date(b.data.timestamp);
+      return dateA - dateB;
     });
-    return sorted;
+    return m;
+    // let sorted = msgs.sort(function (x, y) {
+    //   return parseInt(x.timestamp) - parseInt(y.timestamp);
+    // });
+    // return sorted;
   };
 
   const sendMessage = async () => {
@@ -87,6 +114,7 @@ function Tips() {
         displayName: message.displayName,
         message: message.message,
         uid: message.uid,
+        avatar: avatar,
       };
 
       let res = await API.post('messages', msg);
@@ -124,12 +152,29 @@ function Tips() {
       <button onClick={logOut}>Sign Out</button>
       <div className='text-center'>
         <h1>Chat</h1>
-        <Container className='chat-box'>
-          <div className='scrollable'>
-            {sortByTimeAscending(messageList).map((msg) => {
-              return <div className='chat'>{msg.data.message}</div>;
-            })}
-          </div>
+        <div className='wrapper container'>
+          <Container className='chat-box'>
+            <div className='scrollable'>
+              {messageList.map((msg) => {
+                return (
+                  <div className='chat'>
+                    <Row>
+                      <Col xs='2'>
+                        <img
+                          className='avatar'
+                          alt={msg.data.displayName}
+                          src={avatar}
+                        />{' '}
+                        <div className='thick'>{msg.data.displayName}</div>
+                      </Col>
+                      <Col xs='10'>{msg.data.message}</Col>
+                    </Row>
+                  </div>
+                );
+              })}
+            </div>
+            <div ref={myRef}></div>
+          </Container>
           <div className='pinned'>
             <InputGroup>
               <FormControl
@@ -149,7 +194,7 @@ function Tips() {
               </InputGroup.Append>
             </InputGroup>
           </div>
-        </Container>
+        </div>
       </div>
     </div>
   );

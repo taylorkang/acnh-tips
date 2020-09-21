@@ -1,8 +1,7 @@
 import React, { useContext, useState } from 'react';
 import Form from 'react-bootstrap/Form';
 import Button from 'react-bootstrap/Button';
-import Row from 'react-bootstrap/Row';
-import Col from 'react-bootstrap/Col';
+import Spinner from 'react-bootstrap/Spinner';
 import './SignIn.css';
 import 'firebase/auth';
 import { useHistory } from 'react-router-dom';
@@ -13,9 +12,25 @@ const SignInForm = (props) => {
     return !str || 0 === str.length;
   };
 
+  let history = useHistory();
+
+  const signUp = () => {
+    let path = '/';
+    history.push(path);
+  };
+
+  const loader = () => {
+    if (props.loading) {
+      return (
+        <Spinner className='spinner' animation='border' variant='primary' />
+      );
+    }
+  };
+
   return (
     <Form onSubmit={props.handleSubmit} className='box text-center signin'>
       <h1>Sign In</h1>
+      <button onClick={signUp}>Sign Up</button>
       <Form.Group controlId='formBasicEmail'>
         <Form.Control
           name='email'
@@ -39,9 +54,10 @@ const SignInForm = (props) => {
         />
       </Form.Group>
 
-      <Button variant='primary' type='submit'>
-        Submit
+      <Button disabled={props.loading} variant='primary' type='submit'>
+        Sign In
       </Button>
+      {loader()}
 
       {props.user && !isEmpty(props.user.error) ? (
         <p style={{ color: 'red' }}>{props.user.error}</p>
@@ -60,6 +76,7 @@ const SignIn = () => {
     code: '',
     isError: false,
   });
+  const [loading, setLoading] = useState(false);
 
   const handleChange = (e) => {
     setUser({
@@ -72,7 +89,7 @@ const SignIn = () => {
   const handleSubmit = (e) => {
     e.preventDefault();
     // Log in code here.
-
+    setLoading(true);
     firebase
       .auth()
       .signInWithEmailAndPassword(user.email, user.password)
@@ -80,7 +97,7 @@ const SignIn = () => {
         setTimeout(function () {
           history.push('/tips');
         }, 1000);
-
+        setLoading(false);
         //}
       })
       .catch((error) => {
@@ -92,6 +109,7 @@ const SignIn = () => {
           code: error.code,
           isError: true,
         });
+        setLoading(false);
       });
   };
 
@@ -103,6 +121,7 @@ const SignIn = () => {
         handleSubmit={handleSubmit}
         handleChange={handleChange}
         firebase={firebase}
+        loading={loading}
       />
     </div>
   );

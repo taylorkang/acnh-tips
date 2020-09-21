@@ -1,8 +1,10 @@
-import React, { useContext, useState } from 'react';
+import React, { useContext, useState, useEffect } from 'react';
 import Form from 'react-bootstrap/Form';
 import Button from 'react-bootstrap/Button';
 import Row from 'react-bootstrap/Row';
 import Col from 'react-bootstrap/Col';
+import Dropdown from 'react-bootstrap/Dropdown';
+import Spinner from 'react-bootstrap/Spinner';
 import { useFirebaseApp } from 'reactfire';
 import 'firebase/auth';
 import { useHistory } from 'react-router-dom';
@@ -15,6 +17,7 @@ const SignUpForm = (props) => {
   const isEmpty = (str) => {
     return !str || 0 === str.length;
   };
+  let history = useHistory();
 
   const handleChange = (e) => {
     console.log(e.target.value);
@@ -25,11 +28,45 @@ const SignUpForm = (props) => {
     });
   };
 
+  const loader = () => {
+    if (props.loading) {
+      return (
+        <Spinner className='spinner' animation='border' variant='primary' />
+      );
+    }
+  };
+
+  const signIn = () => {
+    let path = '/signIn';
+    history.push(path);
+  };
+
   let user = props.user;
 
   return (
     <Form onSubmit={props.handleSubmit} className='box text-center'>
       <h1>Sign Up</h1>
+      <button onClick={signIn}>Sign In</button>
+      <Form.Group controlId='formBasicAvatarDropdown'>
+        <p>Avatar</p>
+        <Dropdown onSelect={props.onSelect} id='d'>
+          {/* <Dropdown onSelect={this.onSelect} id='d'> */}
+          <Dropdown.Toggle>
+            <img className='avatar' alt='avatar' src={props.avatar} />
+          </Dropdown.Toggle>
+          <Dropdown.Menu className='menu'>
+            {props.avatars &&
+              props.avatars.map((av) => {
+                return (
+                  <Dropdown.Item eventKey={av.url} key={av.id}>
+                    <img className='avatar' alt='avatar' src={av.url} />
+                  </Dropdown.Item>
+                );
+              })}
+          </Dropdown.Menu>
+        </Dropdown>
+      </Form.Group>
+
       <Form.Group controlId='formBasicName'>
         <Row>
           <Col>
@@ -86,9 +123,10 @@ const SignUpForm = (props) => {
         />
       </Form.Group>
 
-      <Button variant='primary' type='submit'>
-        Submit
+      <Button disabled={props.loading} variant='primary' type='submit'>
+        Sign Up
       </Button>
+      {loader()}
       {/* {errors.length > 0
         ? errors.map((error) => <p style={{ color: 'red' }}>{error}</p>)
         : null} */}
@@ -103,6 +141,25 @@ const Home = () => {
   const firebase = useFirebaseApp();
   let history = useHistory();
   document.title = 'Sign Up | ACNH Tips';
+  const [avatars, setAvatars] = useState([]);
+  const [avatar, setAvatar] = useState(
+    'https://firebasestorage.googleapis.com/v0/b/acnh-tips-api.appspot.com/o/avatars%2F010-boy.svg?alt=media&token=d8b57dfc-863f-4d18-80aa-13b1fd4857bd'
+  );
+  const [selectedId, setSelectedId] = useState('1SJh93FFSVllCWUr3H55');
+  const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        let res = await API.get('avatars');
+        setAvatars(res.data);
+      } catch (e) {
+        console.log(e);
+      }
+    };
+
+    fetchData();
+  }, []);
 
   const createUser = async (uid) => {
     let obj = {
@@ -111,14 +168,22 @@ const Home = () => {
       firstName: user.firstName,
       lastName: user.lastName,
       email: user.email,
+      avatar: avatar,
     };
 
     let res = await API.post('users', obj);
     console.log(res);
   };
 
+  const onSelect = (eventKey) => {
+    console.log(eventKey);
+    setSelectedId({ selectedId: eventKey });
+    setAvatar(eventKey);
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setLoading(true);
     try {
       await firebase
         .auth()
@@ -137,11 +202,13 @@ const Home = () => {
             lastName: '',
             email: '',
             password: '',
+            avatar: '',
           });
 
           setTimeout(function () {
             history.push('/tips');
           }, 1000);
+          setLoading(false);
         })
         .catch((e) => {
           setUser({
@@ -149,6 +216,7 @@ const Home = () => {
             error: e.message,
             isError: true,
           });
+          setLoading(false);
         });
     } catch (e) {
       setUser({
@@ -159,6 +227,11 @@ const Home = () => {
     }
   };
 
+  const signIn = () => {
+    let path = '/signIn';
+    history.push(path);
+  };
+
   const [user, setUser] = useState({
     firstName: '',
     lastName: '',
@@ -166,10 +239,20 @@ const Home = () => {
     email: '',
     password: '',
     error: '',
+    avatar: '',
   });
   return (
-    <div className='flex'>
-      <SignUpForm user={user} setUser={setUser} handleSubmit={handleSubmit} />
+    <div>
+      <div className='flex'>
+        <SignUpForm
+          user={user}
+          avatars={avatars}
+          setUser={setUser}
+          handleSubmit={handleSubmit}
+          onSelect={onSelect}
+          avatar={avatar}
+        />
+      </div>
     </div>
   );
 };
