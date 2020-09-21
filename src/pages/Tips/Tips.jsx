@@ -72,6 +72,13 @@ function Tips() {
     return !str || 0 === str.length;
   };
 
+  const sortByTimeAscending = (msgs) => {
+    let sorted = msgs.sort(function (x, y) {
+      return x.timestamp - y.timestamp;
+    });
+    return sorted;
+  };
+
   const sendMessage = async () => {
     console.log('made it here');
     console.log(message);
@@ -84,6 +91,10 @@ function Tips() {
 
       let res = await API.post('messages', msg);
       console.log(res);
+      setMessage({
+        ...message,
+        message: '',
+      });
     } else {
       // display some kind of popup
     }
@@ -109,7 +120,7 @@ function Tips() {
         <h1>Chat</h1>
         <Container className='chat-box'>
           <div className='scrollable'>
-            {messageList.reverse().map((msg) => {
+            {sortByTimeAscending(messageList).map((msg) => {
               return <div className='chat'>{msg.data.message}</div>;
             })}
           </div>
