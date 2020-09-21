@@ -8,6 +8,8 @@ import 'firebase/auth';
 import { useHistory } from 'react-router-dom';
 import './Home.css';
 
+import API from '../../api.js';
+
 const SignUpForm = (props) => {
   const [formError, setFormError] = useState('');
   const isEmpty = (str) => {
@@ -102,6 +104,19 @@ const Home = () => {
   let history = useHistory();
   document.title = 'Sign Up | ACNH Tips';
 
+  const createUser = async (uid) => {
+    let obj = {
+      uid: uid,
+      displayName: user.displayName,
+      firstName: user.firstName,
+      lastName: user.lastName,
+      email: user.email,
+    };
+
+    let res = await API.post('users', obj);
+    console.log(res);
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
@@ -111,6 +126,17 @@ const Home = () => {
         .then((res) => {
           res.user.updateProfile({
             displayName: user.displayName,
+          });
+
+          createUser(res.user.uid);
+
+          setUser({
+            ...user,
+            displayName: '',
+            firstName: '',
+            lastName: '',
+            email: '',
+            password: '',
           });
 
           setTimeout(function () {
