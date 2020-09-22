@@ -1,3 +1,15 @@
+@font-face {
+  font-family: 'Animal-Crossing-Wild-World-Regular';
+  src: url('./fonts/Animal-Crossing-Wild-World-Regular.ttf.woff') format('woff'),
+    url('./fonts/Animal-Crossing-Wild-World-Regular.ttf.svg#Animal-Crossing-Wild-World-Regular')
+      format('svg'),
+    url('./fonts/Animal-Crossing-Wild-World-Regular.ttf.eot'),
+    url('./fonts/Animal-Crossing-Wild-World-Regular.ttf.eot?#iefix')
+      format('embedded-opentype');
+  font-weight: normal;
+  font-style: normal;
+}
+
 .App {
   text-align: center;
 }
@@ -38,9 +50,9 @@
 }
 
 h1 {
-  font-family: 'Animal Crossing: Wild World';
+  font-family: 'Animal-Crossing-Wild-World-Regular';
 }
 
 body {
-  font-family: 'Animal Crossing: Wild World';
+  font-family: 'Animal-Crossing-Wild-World-Regular';
 }
