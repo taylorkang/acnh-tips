@@ -67,6 +67,7 @@ function Tips() {
     const messagesSnapshot = await db.collection('messages').get();
     let messages = [];
     messagesSnapshot.forEach((doc) => {
+      console.log(doc.data());
       messages.push({
         id: doc.id,
         data: doc.data(),
@@ -163,7 +164,7 @@ function Tips() {
                         <img
                           className='avatar'
                           alt={msg.data.displayName}
-                          src={avatar}
+                          src={msg.data.avatar}
                         />{' '}
                         <div className='thick'>{msg.data.displayName}</div>
                       </Col>
