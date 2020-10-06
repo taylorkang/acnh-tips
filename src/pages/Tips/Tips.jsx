@@ -13,7 +13,6 @@ import 'firebase/auth';
 import './Tips.css';
 
 import API from '../../api.js';
-const scrollToRef = (ref) => window.scrollTo(0, ref.current.offsetTop);
 
 //const db = useDatabase();
 
@@ -26,7 +25,12 @@ function Tips() {
   const [newMessage, setNewMessage] = useState(false);
   const user = useUser();
 
-  const myRef = useRef(null);
+  const messagesEndRef = useRef();
+
+  const scrollToBottom = () => {
+    messagesEndRef.current.scrollIntoView({ behavior: 'smooth' });
+    console.log('scroll');
+  };
 
   useEffect(() => {
     getMessages(db);
@@ -46,39 +50,29 @@ function Tips() {
       .onSnapshot((querySnapshot) => {
         querySnapshot.docChanges().forEach((change) => {
           if (change.type === 'added') {
-            console.log('adding');
             let items = messageList;
             items.push({ id: change.doc.id, data: change.doc.data() });
             let msgs = sortByTimeAscending(items);
             setMessageList(msgs);
             setNewMessage(true);
             console.log('New msg: ', change.doc.data());
-            scrollToBottom();
           }
         });
+        setTimeout(scrollToBottom, 500);
       });
-    scrollToBottom();
   }, []);
-
-  const scrollToBottom = () => {
-    console.log('scrolling...');
-    scrollToRef(myRef);
-  };
 
   const getMessages = async () => {
     const messagesSnapshot = await db.collection('messages').get();
     let messages = [];
     messagesSnapshot.forEach((doc) => {
-      console.log(doc.data());
       messages.push({
         id: doc.id,
         data: doc.data(),
       });
     });
-    console.log('setting messages...');
     let msgs = sortByTimeAscending(messages);
     setMessageList(msgs);
-    console.log(msgs);
   };
 
   let history = useHistory();
@@ -96,8 +90,6 @@ function Tips() {
   const sortByTimeAscending = (msgs) => {
     let m = msgs;
     m.sort(function (a, b) {
-      console.log(a.data.timestamp);
-      console.log(b.data.timestamp);
       let dateA = new Date(a.data.timestamp),
         dateB = new Date(b.data.timestamp);
       return dateA - dateB;
@@ -110,8 +102,6 @@ function Tips() {
   };
 
   const sendMessage = async () => {
-    console.log('made it here');
-    console.log(message);
     if (!isEmpty(message.message)) {
       const msg = {
         displayName: message.displayName,
@@ -121,7 +111,6 @@ function Tips() {
       };
 
       let res = await API.post('messages', msg);
-      console.log(res);
       setMessage({
         ...message,
         message: '',
@@ -155,6 +144,9 @@ function Tips() {
       <button onClick={logOut}>Sign Out</button>
       <div className='text-center'>
         <h1>Chat</h1>
+        <button className='mb-2' onClick={scrollToBottom}>
+          Scroll to bottom
+        </button>
         <div className='wrapper container'>
           <Container className='chat-box'>
             <div className='scrollable'>
@@ -175,8 +167,8 @@ function Tips() {
                   </div>
                 );
               })}
+              <div ref={messagesEndRef} />
             </div>
-            <div ref={myRef}></div>
           </Container>
           <div className='pinned'>
             <InputGroup>
