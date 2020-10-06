@@ -23,6 +23,7 @@ function Tips() {
   const [messageList, setMessageList] = useState([]);
   const [message, setMessage] = useState({});
   const [avatar, setAvatar] = useState('');
+  const [newMessage, setNewMessage] = useState(false);
   const user = useUser();
 
   const myRef = useRef(null);
@@ -50,6 +51,7 @@ function Tips() {
             items.push({ id: change.doc.id, data: change.doc.data() });
             let msgs = sortByTimeAscending(items);
             setMessageList(msgs);
+            setNewMessage(true);
             console.log('New msg: ', change.doc.data());
             scrollToBottom();
           }
