@@ -54,7 +54,7 @@ function Tips() {
             items.push({ id: change.doc.id, data: change.doc.data() });
             let msgs = sortByTimeAscending(items);
             setMessageList(msgs);
-            setNewMessage(true);
+            message === true ? setNewMessage(false) : setNewMessage(true);
             console.log('New msg: ', change.doc.data());
           }
         });
